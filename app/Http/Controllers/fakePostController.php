@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use App\Jobs\postDataJob;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
 
 class fakePostController extends Controller
 {
@@ -30,30 +31,33 @@ class fakePostController extends Controller
        return redirect()->back()->withErrors($messages)->withInput();
     } 
 
+      $data =array(
+      	       'name'=>$req->name,
+      	       'lastName'=>$req->lastName
+               );
 
-   	//send data to url
-    $response = Http::asForm()->post('https://atomic.incfile.com/fakepost', [
-    'name' => $req->Name,
-    'lastName' => $req->lastName,
-     ]);
+
+    //send data to url
+    $response = Http::asForm()->post('https://atomic.incfile.com/fakepost',$data);
+
      //if data fail
     if($response->successful() == false ||  
       $response->successful() ||
       $response->failed() ||
       $response->clientError() ||
       $response->serverError()){
+
+     //Job
+     postDataJob::dispatch($data); 
     
-       return redirect()->back()->withInput()->with('error', 'error, try again!');  
+    return redirect()->back()->withInput()->with('error', 'error, try again!');   
     
     }else{
-        return redirect()->back()->with('success', 'success!');     
- 
+      
+    return redirect()->back()->with('success', 'success!');    
+         
     }
 
-
-
-
-   }
-
+  }
 
 }
